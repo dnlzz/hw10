@@ -46,7 +46,7 @@ int main(int argc, char **argv) {
   init_lst(vector_y, n);
 
   prod = dot_product(vector_x, vector_y, sidx, eidx);
-  printf("%d : %d\n", pid, prod);
+  printf("%d\n", prod);
   
   if (pid == MASTER)  {
       for (i = 1; i < nprocs; i++)

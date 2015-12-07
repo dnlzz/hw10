@@ -17,7 +17,7 @@ void init_lst();
 void print_lst();
 
 int main(int argc, char **argv) {
-  int i,n,vector_x[NELMS],vector_y[NELMS];
+  int i,n,vector_x[NELMS],vector_y[NELMS],tmpLst[100];
   int prod,tmp_prod,sidx,eidx,size,mprod;
   int pid,nprocs, rank;
   double stime,etime;
@@ -45,19 +45,19 @@ int main(int argc, char **argv) {
   init_lst(vector_x, n);
   init_lst(vector_y, n);
 
+  MPI_Scatter(vector_x, size, MPI_INT, vector_x+sidx, size, MPI_INT, MASTER, world);
+  MPI_Scatter(vector_y, size, MPI_INT, vector_y+sidx, size, MPI_INT, MASTER, world);
+
   prod = dot_product(vector_x, vector_y, sidx, eidx);
   printf("%d : %d\n", pid, prod);
   
-  if (pid == MASTER)  {
-      for (i = 1; i < nprocs; i++)
-	{
-	  MPI_Recv(&tmp_prod, 1, MPI_INT, i, 123, MPI_COMM_WORLD, &status);
-	  prod += tmp_prod;
-	}  
-    }
+  MPI_Gather(&prod, 1, MPI_INT, tmpLst, 1, MPI_INT, MASTER, world);
 
-  else {
-      MPI_Send(&prod, 1, MPI_INT, MASTER, 123, MPI_COMM_WORLD);
+  if (pid == MASTER)  {
+    for (i = 0; i < nprocs; i++)
+	{
+	  prod += tmpLst[i];
+	}  
     }
 
   etime = MPI_Wtime();
